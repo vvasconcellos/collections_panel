@@ -16,7 +16,7 @@ session_start();
 <!--[if gt IE 8]><!--> <html class="no-js" lang="es"> <!--<![endif]-->
 <html>
 <head>	
-<title>Pagamentos MercadoPago</title>
+<title>Payments MercadoPago</title>
 <link rel="shortcut icon" href="https://a248.e.akamai.net/secure.mlstatic.com/components/resources/mp/images/favicon.ico" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 

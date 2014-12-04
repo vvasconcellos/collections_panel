@@ -79,7 +79,7 @@ include 'lib/mercadopago.php';
   if($response=='200' ){
     $_SESSION['user'] = $user;
     $_SESSION['pass'] = $pass;
-    header("Location: menu.php" );
+    header("Location: search.php" );
     
     }else {
     echo ("<br><br><div class='ch-box-error'><h3>Login Incorreto</h3><p></p></div>");
