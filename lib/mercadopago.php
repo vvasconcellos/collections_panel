@@ -162,7 +162,31 @@ class MP {
         $collection_result = MPRestClient::get($uri_prefix."/collections/search?" . $filters . "&access_token=" . $access_token);
         return $collection_result;
     }
+    
+    
+    /**
+     * Search payments according to filters, with pagination
+     * @param array $filters
+     * @param int $offset
+     * @param int $limit
+     * @return array(json)
+     */
+    public function search_movements($filters, $offset = 0, $limit = 0) {
+        
+        $access_token = $this->get_access_token();
 
+        $filters["offset"] = $offset;
+        $filters["limit"] = $limit;
+
+        $filters = $this->build_query($filters);
+
+        echo "/mercadopago_account/movements/search?" . $filters . "&access_token=" . $access_token;
+            
+        $collection_result = MPRestClient::get("/mercadopago_account/movements/search?" . $filters . "&access_token=" . $access_token);
+        return $collection_result;
+    }
+    
+    
     /**
      * Create a checkout preference
      * @param array $preference

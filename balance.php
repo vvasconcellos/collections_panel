@@ -26,7 +26,7 @@ include "header.php";
 </div>	
 		
         <div class="ch-box">
-		<h2>Search Payment</h2>
+		<h2>Balance</h2>
 		<form action="#" class="class="ch-form" method="POST">
 			<fieldset>
 			    
