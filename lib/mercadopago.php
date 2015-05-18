@@ -30,6 +30,7 @@ class MP {
 
         return $this->sandbox;
     }
+    
 
     /**
      * Get Access Token for API use
@@ -64,7 +65,52 @@ class MP {
         
         return $this->access_data;
     }
+    
+ 
+    public function get_balance() {
+        
+        $access_token = $this->get_access_token();
+        
+        $cust = MPRestClient::get("/applications/" .$this->client_id);
 
+        $balance_info = MPRestClient::get("/users/" .  $cust["response"]["owner_id"] . "/mercadopago_account/balance?access_token=" . $access_token);
+
+        return $balance_info;
+    }
+    
+    
+      public function get_movements($filters, $offset = 0, $limit = 0) {
+            
+        $cust = MPRestClient::get("/applications/" .$this->client_id);
+             
+        $filters["offset"] = $offset;
+        $filters["limit"] = $limit;
+
+        $filters = $this->build_query($filters);
+
+        $access_token = $this->get_access_token();
+                
+        $balance_info = MPRestClient::get("/mercadopago_account/movements/search?" . $filters . "&user_id=" . $cust["response"]["owner_id"] . "&access_token=". $access_token);
+        
+        return $balance_info;
+    }    
+
+    
+    
+        
+ 
+    public function get_balance_history() {
+        
+        $access_token = $this->get_access_token();
+        
+        $cust = MPRestClient::get("/applications/" .$this->client_id);
+        
+        $balance_info = MPRestClient::get("/balance/history?user_id=" .  $cust["response"]["owner_id"] . "&sort=date_created&criteria=desc&limit=5000&access_token=". $access_token);
+        
+        return $balance_info;
+    }    
+
+       
     /**
      * Get information for specific payment
      * @param int $id
@@ -78,6 +124,7 @@ class MP {
         $payment_info = MPRestClient::get($uri_prefix."/collections/notifications/" . $id . "?access_token=" . $access_token);
         return $payment_info;
     }
+    
     public function get_payment_info($id) {
         return $this->get_payment($id);
     }
@@ -150,17 +197,18 @@ class MP {
      * @return array(json)
      */
     public function search_payment($filters, $offset = 0, $limit = 0) {
-        $access_token = $this->get_access_token();
+        $accessToken = $this->get_access_token();
 
         $filters["offset"] = $offset;
         $filters["limit"] = $limit;
 
         $filters = $this->build_query($filters);
 
-        $uri_prefix = $this->sandbox ? "/sandbox" : "";
-            
-        $collection_result = MPRestClient::get($uri_prefix."/collections/search?" . $filters . "&access_token=" . $access_token);
-        return $collection_result;
+        $uriPrefix = $this->sandbox ? "/sandbox" : "";
+        //echo("<br>https://api.mercadolibre.com/collections/search?" . $filters . "&access_token=" . $accessToken);    
+        
+        $collectionResult = MPRestClient::get($uriPrefix."/collections/search?" . $filters . "&access_token=" . $accessToken);
+        return $collectionResult;
     }
     
     
@@ -288,8 +336,6 @@ class MPRestClient {
         $connect = curl_init(self::API_BASE_URL . $uri);
 
         curl_setopt($connect, CURLOPT_USERAGENT, "MercadoPago PHP SDK v" . MP::version);
-        curl_setopt($connect, CURLOPT_CAINFO, $GLOBALS["LIB_LOCATION"] . "/cacert.pem");
-        curl_setopt($connect, CURLOPT_SSLVERSION, 3);
         curl_setopt($connect, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($connect, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($connect, CURLOPT_HTTPHEADER, array("Accept: application/json", "Content-Type: " . $content_type));

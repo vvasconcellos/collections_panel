@@ -1,30 +1,16 @@
 <?php
-       if (isset($_POST["_eventId_confirmation"])) { 
-        
-        require_once "lib/mercadopago.php";
+
+
     
-        $clientid = $_SESSION['user'];
-        $clientsecret = $_SESSION['pass'];
-    
-        $mp = new MP($clientid ,$clientsecret);
-       
-       $date1=implode("-",array_reverse(explode("/",$_POST['date1'])));;
-       $date2=implode("-",array_reverse(explode("/",$_POST['date2'])));;
-        
-        $filters = array(
-            "range" => "date_approved",  
-            "begin_date" => $date1 . "T00:00:00.000-02:00",
-            "end_date" => $date2."T23:59:00.000-02:00"
-        );
-       
-        
+       $mp = new MP($clientid ,$clientsecret); 
+      
         // Search payment data according to filters
-        $searchResult = $mp->search_payment($filters,0,1000);
-        
-        /* echo "<pre>";
+        $searchResult = $mp->get_balance_history();
+        /*
+         echo "<pre>";
         print_r($searchResult);
-        echo "</pre>"; */
-        
+        echo "</pre>"; 
+        */
         // Show payment information
         ?>   
        
@@ -32,26 +18,20 @@
        <table class="ch-datagrid-controls" id="table_collections" >
             <tr style="background-color: lightgrey;" >
             
-              <td scope="col">Payment Id</td>
+              <td scope="col">Id</td>              
+              <td scope="col">Payment Id</td>              
+              <td scope="col">Type</td>   
               <td scope="col">Order</td>
               <td scope="col">Date created</td>
-              <td scope="col">Date approved</td>
-              <td scope="col">Money release date</td>
-              <td scope="col">Money release date 2</td>
-              <td scope="col">Payer email</td>
-              <td scope="col">Transaction amount</td>
-              <td scope="col">Total paid amount</td>
-              <td scope="col">Coupon amount</td>
-              <td scope="col">Mercadopago fee</td>
-              <td scope="col">Finance fee</td>
-              <td scope="col">Net received amount</td>
-              <td scope="col">Status</td>
-              <td scope="col">Status detail</td>
-              <td scope="col">Cardholder - name</td>
-              <td scope="col">Last four digits</td>
-              <td scope="col">Payment metdod</td>
-              <td scope="col">Installments</td>
-
+              
+              <td scope="col">Available</td>
+              <td scope="col">Amount</td>
+              <td scope="col">Net</td>
+              <td scope="col">Fee</td>
+              <td scope="col">Total balance</td>
+              <td scope="col">Financing fee</td>
+              <td scope="col">MercadoPago Fee</td>
+              
               
             
             </tr>
@@ -59,34 +39,48 @@
             foreach ($searchResult["response"]["results"] as $payment) {
                 ?>
                 <tr>
-                    <td><?php echo $payment["collection"]["id"]; ?></td>
-                    <td><?php echo $payment["collection"]["external_reference"]; ?></td>
-                    <td><?php echo formatdataout($payment["collection"]["date_created"]); ?></td>
-                    <td><?php echo formatdataout($payment["collection"]["date_approved"]); ?></td>
-                    <td><?php echo formatdataout($payment["collection"]["money_release_date"]); ?></td>
-                    <td><?php echo formatdataout2($payment["collection"]["money_release_date"]); ?></td>
-                    <td><?php echo $payment["collection"]["payer"]["email"]; ?></td>
-                    <td><?php echo str_replace(".",",",$payment["collection"]["transaction_amount"]); ?></td>
-                    <td><?php echo str_replace(".",",",$payment["collection"]["total_paid_amount"]); ?></td>
-                    <td><?php echo str_replace(".",",",$payment["collection"]["coupon_amount"]); ?></td>
-                    <td><?php echo str_replace(".",",",$payment["collection"]["mercadopago_fee"]); ?></td>
-                    <td><?php echo str_replace(".",",",$payment["collection"]["finance_fee"]); ?></td>
-                    <td><?php echo str_replace(".",",",$payment["collection"]["net_received_amount"]); ?></td>
-                    <td><?php echo $payment["collection"]["status"]; ?></td>
-                    <td><?php echo $payment["collection"]["status_detail"]; ?></td>
-                    <td><?php echo $payment["collection"]["cardholder"]["name"]; ?></td>
-
-                    <td><?php echo $payment["collection"]["last_four_digits"]; ?></td>
-                    <td><?php echo $payment["collection"]["payment_method_id"]; ?></td>
-                    <td><?php echo $payment["collection"]["installments"]; ?></td>
-
+                    
+                    <td><?php echo $payment["id"]; ?></td>
+                    <td><?php echo $payment["source"]["id"]; ?></td>
+                    <td><?php echo $payment["source"]["type"]; ?></td>
+                    <td><?php echo $payment["external_reference"]; ?></td>
+                    <td><?php echo formatdataout($payment["date_created"]); ?></td>
+                    <td><?php echo ($payment["available"]==1?'Available':'Unavailable'); ?></td>
+                    <td><?php echo str_replace(".",",",$payment["amount"]); ?></td>
+                    <td><?php echo str_replace(".",",",$payment["net"]); ?></td>
+                    <td><?php echo str_replace(".",",",$payment["fee"]); ?></td>
+                    <td><?php echo str_replace(".",",",$payment["total_balance"]); ?></td>
+                    
+                    <?php
+                    
+                    if (isset($payment["fee_details"])){
+                   
+                        foreach ($payment["fee_details"] as $detail) {
+                        
+                       echo ($detail["type"]=="financing_fee")?'<td>'.$detail["amount"].'</td>':'';  
+                       echo ($detail["type"]=="mercadopago_fee")?'<td>'.$detail["amount"].'</td>':'';
+                        
+                     }
+                    
+                    
+                        
+                    } else {
+                        
+                       echo '<td></td>';
+                       echo '<td></td>'; 
+                    }
+                    
+     
+                    ?>
+                    
+                   
                     
                 </tr>
                 <?php
             }
             
             
-       }
+
        
        
        function formatdataout($data){

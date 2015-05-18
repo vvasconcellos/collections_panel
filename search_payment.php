@@ -12,19 +12,24 @@
        $date2=implode("-",array_reverse(explode("/",$_POST['date2'])));;
         
         $filters = array(
-            "range" => "date_approved",  
-            "begin_date" => $date1 . "T00:00:00.000-02:00",
-            "end_date" => $date2."T23:59:00.000-02:00"
+            "range" => "date_created",  
+            "begin_date" => $date1 . "T00:00:00.00Z",
+            "end_date" => $date2."T23:59:00.00Z",
+            "sort"=>"date_created",
+            "criteria"=>"desc"
         );
        
         
         // Search payment data according to filters
-        $searchResult = $mp->search_payment($filters,0,1000);
-        
-        /* echo "<pre>";
+       $searchResult = $mp->search_payment($filters,0,10); 
+       $rowslimit = (int)$searchResult["response"]["paging"]["total"];
+       echo "<h5> Total - rows: " . $rowslimit . " </h5><br><br>" ;
+        /*
+        echo "<pre>";
         print_r($searchResult);
-        echo "</pre>"; */
-        
+        echo "</pre>"; 
+        exit(0);
+       */
         // Show payment information
         ?>   
        
@@ -56,7 +61,16 @@
             
             </tr>
             <?php
-            foreach ($searchResult["response"]["results"] as $payment) {
+            
+            $offset = 0;
+ 
+            while ($rowslimit>=$offset){
+               
+              // echo '<script type="text/javascript">alert("'. $offset . '");</script>';
+               
+               $interacao = $mp->search_payment($filters,$offset,1000);              
+               
+               foreach ($interacao["response"]["results"] as $payment) {
                 ?>
                 <tr>
                     <td><?php echo $payment["collection"]["id"]; ?></td>
@@ -83,8 +97,12 @@
                     
                 </tr>
                 <?php
-            }
+              }
             
+              $offset+=1000;
+              $interacao = 0;
+            
+            }
             
        }
        

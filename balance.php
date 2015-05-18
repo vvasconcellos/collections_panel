@@ -4,6 +4,10 @@ ini_set('log_errors', 1);
 ini_set('error_log', dirname(__FILE__) . '/error_log.txt');
 error_reporting(E_ALL);
 include "header.php";
+require_once "lib/mercadopago.php";
+        
+$clientid = $_SESSION['user'];
+$clientsecret = $_SESSION['pass'];
 
 ?>
   
@@ -15,8 +19,8 @@ include "header.php";
             <ul class="nav navbar-nav">
 		<li> <img src="https://a248.e.akamai.net/secure.mlstatic.com/components/resources/mp/css/assets/desktop-logo-mercadopago.png" style='width: 110px;padding-top: 10px;padding-right: 14px;'> </li>
 		<li> <img src="assets/logo.png" style='width: 110px;padding-top: 10px;padding-right: 14px;'> </li>
-		    <li class="active"><a href="search.php">Search Payment</a></li>
-
+		    <li class=""><a href="search.php">Search Payment</a></li>
+                    <li class="active"><a href="balance.php">Movements account</a></li>
             </ul>
 	    <ul class="nav navbar-nav navbar-right">
             <li class="active"><a href="destroy.php">Logoff</a></li>
@@ -26,39 +30,37 @@ include "header.php";
 </div>	
 		
         <div class="ch-box">
+		
+		
 		<h2>Balance</h2>
-		<form action="#" class="class="ch-form" method="POST">
-			<fieldset>
+                    
+		    <br>
+
+		    <?php
+			$mp = new MP($clientid ,$clientsecret); 
+			$balance = $mp->get_balance();
+			
+			echo "<pre>";
+			print_r($balance);
+			echo "</pre>";
+		    ?>
 			    
-			    <p class="ch-form-row ch-form-required">
-					<label for="input_button">Start Date:</label>
-					<input type="date" name="date1" id="date1" required="required">
-    
-					    
-			    </p>
-                            
-			    <p class="ch-form-row ch-form-required">
-					<label for="input_button">End Date:</label>
-					<input type="date" name="date2" id="date2" required="required">
-			    </p>
-                            
-                         				
-			<p class="ch-form-actions">
-				<input type="submit" name="_eventId_confirmation" value="Search" class="ch-btn">
-				<input type="reset" value="Reset" class="ch-btn ch-btn-small">
-			</p>
-                        
-                         </fieldset>
-		</form>
-                
-                
+			<p class="alert alert-success" style="width: 50%;padding: 5px;" role="alert"> Total : <b> R$ <? echo($balance["response"]["total_amount"]); ?></b></p>
+			<p class="alert alert-info" style="width: 50%;padding: 5px;" role="alert"> Available : <b> R$  <? echo($balance["response"]["available_balance"]); ?></b></p>
+			<p class="alert alert-warning" style="width: 50%;padding: 5px;" role="alert"> Unavailable : <b> R$ <? echo($balance["response"]["unavailable_balance"]); ?></b></p>
+		
+            
 	</div>
-                        <div id="load">
-                            
-                            <?php  include "search_payment.php"  ?>
-                            
-                        </div>
-                        
+        
+  
+        
+        
+	<div id="load">
+	    
+	    <?php  include "balance_search.php"  ?>
+	    
+	</div>
+	
                    
 <script src="js/jquery.js"></script>
 <script src="js/chico-min-0.12.2.js"></script> 

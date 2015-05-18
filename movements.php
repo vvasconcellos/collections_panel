@@ -4,6 +4,10 @@ ini_set('log_errors', 1);
 ini_set('error_log', dirname(__FILE__) . '/error_log.txt');
 error_reporting(E_ALL);
 include "header.php";
+require_once "lib/mercadopago.php";
+        
+$clientid = $_SESSION['user'];
+$clientsecret = $_SESSION['pass'];
 
 ?>
   
@@ -15,9 +19,8 @@ include "header.php";
             <ul class="nav navbar-nav">
 		<li> <img src="https://a248.e.akamai.net/secure.mlstatic.com/components/resources/mp/css/assets/desktop-logo-mercadopago.png" style='width: 110px;padding-top: 10px;padding-right: 14px;'> </li>
 		<li> <img src="assets/logo.png" style='width: 110px;padding-top: 10px;padding-right: 14px;'> </li>
-		    <li class="active"><a href="search.php">Search Payment - Collections</a></li>
-		    <li class=""><a href="movements.php">Movements account</a></li>
-
+		    <li class=""><a href="search.php">Search Payment - Collections</a></li>
+                    <li class="active"><a href="movements.php">Movements account</a></li>
             </ul>
 	    <ul class="nav navbar-nav navbar-right">
             <li class="active"><a href="destroy.php">Logoff</a></li>
@@ -27,7 +30,10 @@ include "header.php";
 </div>	
 		
         <div class="ch-box">
-		<h2>Search Payment</h2>
+		
+		
+	  
+		<h2>Search Movements</h2>
 		<form action="#" class="class="ch-form" method="POST">
 			<fieldset>
 			    
@@ -51,15 +57,82 @@ include "header.php";
                         
                          </fieldset>
 		</form>
-                
-                
+		
+		<h2>Balance</h2>
+                    
+		    <br>
+
+		    <?php
+			$mp = new MP($clientid ,$clientsecret); 
+			$balance = $mp->get_balance();
+			/*echo "<pre>";
+			print_r($balance);
+			echo "</pre>";*/
+			$detail_balance= $balance["response"]["unavailable_balance_by_reason"];
+		
+		    ?>
+			    
+			<p class="alert alert-success" style="width: 50%;padding: 5px;" role="alert"> Total : <b> R$ <? echo($balance["response"]["total_amount"]); ?></b></p>
+			<p class="alert alert-info" style="width: 50%;padding: 5px;" role="alert"> Available : <b> R$  <? echo($balance["response"]["available_balance"]); ?></b></p>
+			<p class="alert alert-warning" style="width: 50%;padding: 5px;" role="alert"> Unavailable : <b> R$ <? echo($balance["response"]["unavailable_balance"]); ?></b></p>
+<?
+
+
+			foreach($detail_balance as $resp){
+			    
+			    switch($resp["reason"]){
+				
+				case "chargeback":
+				    
+				echo '<p class="alert alert-warning" style="width: 50%;padding: 3px;MARGIN-LEFT: 30PX" role="alert"> Chargeback : <b> R$ ' . $resp["amount"] . '</b></p>';
+				    
+				break;
+			    
+				case "dispute":
+				    
+				echo '<p class="alert alert-warning" style="width: 50%;padding: 3px;MARGIN-LEFT: 30PX" role="alert"> In mediation : <b> R$ ' . $resp["amount"] . '</b></p>';
+				    
+				break;
+			
+				case "fraud":
+				    
+				echo '<p class="alert alert-warning" style="width: 50%;padding: 3px;MARGIN-LEFT: 30PX" role="alert"> Risk : <b> R$ ' . $resp["amount"] . '</b></p>';
+				    
+				break;
+			    
+				case "time_period":
+				    
+				echo '<p class="alert alert-warning" style="width: 50%;padding: 3px;MARGIN-LEFT: 30PX" role="alert"> Unavailable (D+2) : <b> R$ ' . $resp["amount"] . '</b></p>';
+				    
+				break;
+			    
+				case "restriction":
+				    
+				echo '<p class="alert alert-warning" style="width: 50%;padding: 3px;MARGIN-LEFT: 30PX" role="alert"> Restriction: <b> R$ ' . $resp["amount"] . '</b></p>';
+				    
+				break;
+				
+				
+			    }
+			    
+			    
+			    
+			    
+			    
+			}
+
+
+?>			
+			
+            
 	</div>
-                        <div id="load">
-                            
-                            <?php  include "search_payment.php"  ?>
-                            
-                        </div>
-                        
+        
+	<div id="load">
+	    
+	    <?php  include "movements_search.php"  ?>
+	    
+	</div>
+	
                    
 <script src="js/jquery.js"></script>
 <script src="js/chico-min-0.12.2.js"></script> 
@@ -122,7 +195,7 @@ $(document).ready(function() {
     // This must be a hyperlink
     $(".export").on('click', function (event) {
         // CSV
-        exportTableToCSV.apply(this, [$('#table_collections'), 'collections.csv']);
+        exportTableToCSV.apply(this, [$('#table_collections'), 'movements.csv']);
 
         // IF CSV, don't do event.preventDefault() or return false
         // We actually need this to be a typical hyperlink
